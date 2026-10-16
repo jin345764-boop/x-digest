@@ -1,0 +1,10 @@
+const fs = require('node:fs');
+const child = require('node:child_process');
+const assert = require('node:assert/strict');
+const manifest = JSON.parse(fs.readFileSync('manifest.json', 'utf8'));
+assert.equal(manifest.name, 'X Digest');
+assert.deepEqual(manifest.host_permissions, ['https://x.com/*', 'https://twitter.com/*', 'https://api.supadata.ai/*', 'https://api.deepseek.com/*']);
+for (const file of ['background.js','content.js','x-video.js','transcript.js','settings.js','options.js','sidepanel.js']) child.execFileSync(process.execPath, ['--check', file]);
+for (const file of [manifest.background.service_worker, manifest.side_panel.default_path, manifest.options_ui.page, ...Object.values(manifest.icons), 'prompts/translation.md','prompts/analysis.md','prompts/explain.md','prompts/note-cleanup.md']) assert.ok(fs.existsSync(file), file);
+for (const file of ['background.js','sidepanel.js','settings.js','content.js']) assert.ok(!fs.readFileSync(file,'utf8').includes('https://www.youtube.com'), 'YouTube-specific routing left in ' + file);
+console.log('PASS: manifest, host permissions, X video routing, scripts, prompts and assets');
